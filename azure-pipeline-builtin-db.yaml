@@ -33,24 +33,12 @@ stages:
               displayName: 'Download Google GCR Credentials'
               inputs:
                 secureFile: 'google_service_auth.json'
-            - task: Bash@3
-              inputs:
-                #build
-                docker build -f ./Dockerfile-builtin-db -t gcr.io/$(GCR_PATH)/external/trivy:$(TAG) .
+            - script: |
+                gcloud auth activate-service-account --key-file $(Google_Credentials.secureFilePath) --quiet
+                gcloud auth configure-docker "gcr.io" --quiet
 
-                docker save "gcr.io/$(GCR_PATH)/external/trivy:$(TAG)" -o ./imagefile.tar
-                chmod 777 ./imagefile.tar
-                
-                #scan image for vulnerability
-                securityScan=$(docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/opt/test aquasec/trivy --input /opt/test/imagefile.tar)
-                
-                #fail if vulnerabilities found
-                if [[ $securityScan != *"CRITICAL: 0"* ]] || [[ $securityScan != *"HIGH: 0"* ]]; then 
-                  echo 'found high vulnerabilities' 
-                  exit 1 
-                else 
-                  echo 'no high vulnerability found'
-                fi
-                
-                docker push gcr.io/$(GCR_PATH)/external/trivy:$(TAG)
+            - task: ShellScript@2
+              inputs:
+                scriptPath: ./builtin-db.sh
+                args: $(GCR_PATH) $(TAG)
               displayName: 'Publish To GCR'
