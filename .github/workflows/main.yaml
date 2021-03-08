@@ -1,0 +1,37 @@
+on:
+  schedule:
+    cron: '* * 1-30 * *'
+
+jobs:
+  deployment_trivy:
+    runs_on: ubuntu-latest
+    env:
+      TRIVY_IMAGE_TAG: latest
+      GCP_PROJECT_NAME: cco-admin-project
+    steps:
+      - name: GCP login
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '290.0.1'
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${GCP_PROJECT_NAME}
+          export_default_credentials: true
+      - name: Checkout trivy fork
+        uses: actions/checkout@v2
+        with:
+          repository: jorgyp/trivy
+          ref: refs/heads/jorgypbuiltin-db
+          clean: false 
+      - name: Build, scan, and push trivy scanner to GCR
+        run: |
+          git merge main
+          
+          docker build -t gcr.io/${GCP_PROJECT_NAME}/trivy:${TRIVY_IMAGE_TAG} -f Dockerfile-builtin-db .
+          docker save "gcr.io/${GCP_PROJECT_NAME}/trivy:${TRIVY_IMAGE_TAG}" -o img.tar
+          scan=$(docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/tmp/ aquasec/trivy --input /tmp/img.tar)
+          if [[ "$scan" != *" CRITICAL: 0"* ]]; then
+            echo 'found high vulnerabilities'
+          else
+            echo 'no high vulnerability found'
+          fi
+        shell: bash
