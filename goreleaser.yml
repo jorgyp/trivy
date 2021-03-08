@@ -88,6 +88,8 @@ dockers:
       - "docker.io/aquasec/trivy:latest"
       - "ghcr.io/aquasecurity/trivy:{{ .Version }}"
       - "ghcr.io/aquasecurity/trivy:latest"
+      - "public.ecr.aws/aquasecurity/trivy:latest"
+      - "public.ecr.aws/aquasecurity/trivy:{{ .Version }}"
     binaries:
       - trivy
     build_flag_templates:
@@ -101,4 +103,3 @@ dockers:
       - "--label=org.label-schema.vcs-ref={{ .FullCommit }}"
     extra_files:
     - contrib/
-

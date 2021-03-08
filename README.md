@@ -234,7 +234,7 @@ $ go install
 
 ## Image
 
-Simply specify an image name (and a tag). **The `latest` tag should be avoided as problems occur with the image cache.** See [Clear caches](#clear-caches).
+Simply specify an image name (and a tag).
 
 ### Basic
 
@@ -341,7 +341,9 @@ $ docker run --rm -it alpine:3.11
 ```
 
 ## Embed in Dockerfile
-Scan your image as part of the build process by embedding Trivy in the Dockerfile. This approach can be used to update Dockerfiles currently using Aqua’s [Microscanner](https://github.com/aquasecurity/microscanner).
+Scan your image as part of the build process by embedding Trivy in the
+Dockerfile. This approach can be used to update Dockerfiles currently using
+Aqua’s [Microscanner](https://github.com/aquasecurity/microscanner).
 
 ```
 $ cat Dockerfile
@@ -352,6 +354,16 @@ RUN apk add curl \
     && trivy filesystem --exit-code 1 --no-progress /
 
 $ docker build -t vulnerable-image .
+```
+Alternatively you can use Trivy in a multistage build. Thus avoiding the
+insecure `curl | sh`. Also the image is not changed.
+```
+[...]
+# Run vulnerability scan on build image
+FROM build AS vulnscan
+COPY --from=aquasec/trivy:latest /usr/local/bin/trivy /usr/local/bin/trivy
+RUN trivy filesystem --exit-code 1 --no-progress /
+[...]
 ```
 
 ## Git Repository
@@ -1393,7 +1405,7 @@ $ trivy server --cache-backend redis://localhost:6379
 
 ### Clear caches
 
-The `--clear-cache` option removes caches. This option is useful if the image which has the same tag is updated (such as when using `latest` tag).
+The `--clear-cache` option removes caches.
 
 **The scan is not performed.**
 
@@ -1772,10 +1784,12 @@ The unfixed/unfixable vulnerabilities mean that the patch has not yet been provi
 | SUSE Enterprise Linux        | 11, 12, 15                               | Installed by zypper/rpm       |                  NO                  |
 | Photon OS                    | 1.0, 2.0, 3.0                            | Installed by tdnf/yum/rpm     |                  NO                  |
 | Debian GNU/Linux             | wheezy, jessie, stretch, buster          | Installed by apt/apt-get/dpkg |                 YES                  |
-| Ubuntu                       | 12.04, 14.04, 16.04, 18.04, 18.10, 19.04 | Installed by apt/apt-get/dpkg |                 YES                  |
+| Ubuntu                       | Supported versions by Canonical *1       | Installed by apt/apt-get/dpkg |                 YES                  |
 | Distroless                   | Any                                      | Installed by apt/apt-get/dpkg |                 YES                  |
 
 Distroless: https://github.com/GoogleContainerTools/distroless
+
+*1 Trivy no longer detects vulnerabilities in versions that have reached End of Life.
 
 ## Application Dependencies
 
