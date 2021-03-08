@@ -30,6 +30,7 @@ jobs:
           git checkout jorgypbuiltin-db
           git merge main
 
+          sh -c 'yes | gcloud auth configure-docker'
           docker build -t gcr.io/${GCP_PROJECT_NAME}/trivy:${TRIVY_IMAGE_TAG} -f Dockerfile-builtin-db .
           docker save "gcr.io/${GCP_PROJECT_NAME}/trivy:${TRIVY_IMAGE_TAG}" -o img.tar
           scan=$(docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/tmp/ aquasec/trivy --input /tmp/img.tar)
