@@ -20,12 +20,16 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: jorgyp/trivy
-          ref: refs/heads/jorgypbuiltin-db
+          ref: refs/heads/main
           clean: false 
       - name: Build, scan, and push trivy scanner to GCR
         run: |
+          git remote add upstream https://github.com/aquasecurity/trivy.git
+          git fetch upstream
+          git merge upstream/main
+          git checkout jorgypbuiltin-db
           git merge main
-          
+
           docker build -t gcr.io/${GCP_PROJECT_NAME}/trivy:${TRIVY_IMAGE_TAG} -f Dockerfile-builtin-db .
           docker save "gcr.io/${GCP_PROJECT_NAME}/trivy:${TRIVY_IMAGE_TAG}" -o img.tar
           scan=$(docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/tmp/ aquasec/trivy --input /tmp/img.tar)
@@ -34,4 +38,8 @@ jobs:
           else
             echo 'no high vulnerability found'
           fi
+          docker push "gcr.io/${GCP_PROJECT_NAME}/trivy:${TRIVY_IMAGE_TAG}"
         shell: bash
+
+
+
