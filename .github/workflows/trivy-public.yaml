@@ -29,6 +29,8 @@ jobs:
       - name: Build, scan, and push trivy scanner to GCR
         run: |
           # merge latest updates from trivy
+          git config --global user.email "jporgy@gmail.com"
+          git config --global user.name "jorgyp"
           git remote add upstream https://github.com/aquasecurity/trivy.git
           git fetch upstream
           git merge upstream/main
