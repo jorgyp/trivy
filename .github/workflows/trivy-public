@@ -1,0 +1,41 @@
+
+on:
+  workflow_dispatch:
+  schedule:
+    cron: '* * 1-30 * *'
+
+jobs:
+  deployment_trivy:
+    runs_on: ubuntu-latest
+    env:
+      TRIVY_IMAGE_TAG: latest
+      GCP_PROJECT_NAME: cco-admin-project
+    steps:
+      - uses: actions/checkout@v1
+      - name: Login to DockerHub Registry
+        run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+      - name: Checkout trivy fork
+        uses: actions/checkout@v2
+        with:
+          repository: jorgyp/trivy
+          ref: refs/heads/main
+          clean: false 
+      - name: Build, scan, and push trivy scanner to GCR
+        run: |
+          # merge latest updates from trivy
+          git remote add upstream https://github.com/aquasecurity/trivy.git
+          git fetch upstream
+          git merge upstream/main
+          git checkout jorgypbuiltin-db
+          git merge main
+          sh -c 'yes | gcloud auth configure-docker'
+          docker build -t syagolnikov/trivy:${TRIVY_IMAGE_TAG} -f Dockerfile-builtin-db .
+          docker save "syagolnikov/trivy:${TRIVY_IMAGE_TAG}" -o /tmp/img.tar
+          scan=$(docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/tmp/ aquasec/trivy --input /tmp/img.tar)
+          if [[ "$scan" != *" CRITICAL: 0"* ]]; then
+            echo 'found high vulnerabilities'
+          else
+            echo 'no high vulnerability found'
+          fi
+          docker push syagolnikov/trivy:${TRIVY_IMAGE_TAG}
+        shell: bash
