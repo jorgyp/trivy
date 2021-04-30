@@ -29,6 +29,10 @@ jobs:
       - name: Build, scan, and push trivy scanner to GCR
         id: build
         run: |
+          # merge latest updates from trivy
+          git config --global user.email "jporgy@gmail.com"
+          git config --global user.name "jorgyp"
+          git checkout jorgypbuiltin-db
           docker build -t syagolnikov/nginx:${{ github.sha }} .
         shell: bash
       - name: Trivy scanner
