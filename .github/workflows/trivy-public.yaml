@@ -1,12 +1,18 @@
-
+name: public trivy 
 on:
   workflow_dispatch:
+    inputs:
+      start:
+        description: "start run"
+        default: "run"
+        required: no
   schedule:
-    cron: '* * 1-30 * *'
+    - cron: '* * 1-30 * *'
 
 jobs:
-  deployment_trivy:
-    runs_on: ubuntu-latest
+  trivy-build:
+    name: trivy-build
+    runs-on: ubuntu-latest
     env:
       TRIVY_IMAGE_TAG: latest
       GCP_PROJECT_NAME: cco-admin-project
