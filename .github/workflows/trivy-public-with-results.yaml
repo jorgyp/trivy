@@ -1,0 +1,47 @@
+name: public trivy 
+on:
+  workflow_dispatch:
+    inputs:
+      start:
+        description: "start run"
+        default: "run"
+        required: no
+  schedule:
+    - cron: '* * 1-30 * *'
+
+jobs:
+  trivy-build:
+    name: trivy-build
+    runs-on: ubuntu-latest
+    env:
+      TRIVY_IMAGE_TAG: latest
+      GCP_PROJECT_NAME: cco-admin-project
+    steps:
+      - uses: actions/checkout@v1
+      - name: Login to DockerHub Registry
+        run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+      - name: Checkout trivy fork
+        uses: actions/checkout@v2
+        with:
+          repository: jorgyp/trivy
+          ref: refs/heads/main
+          clean: false 
+      - name: Build, scan, and push trivy scanner to GCR
+        id: build
+        run: |
+          docker build -t syagolnikov/nginx:${{ github.sha }} .
+        shell: bash
+      - name: Trivy scanner
+        id: scan
+        uses: auqasecurity/trivy-actions@master
+        with: 
+          image-ref: 'syagolnikov/trivy:${{ github.sha }}'
+          formate: 'template'
+          template: '@/contrib/sarif.tpl'
+          output: 'trivy-results.sarif'
+
+      - name: push  
+        if: steps.scan.outcome == 'success'
+        run: |
+          docker push syagolnikov/nginx:${TRIVY_IMAGE_TAG}
+      
