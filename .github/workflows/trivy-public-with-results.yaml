@@ -35,7 +35,7 @@ jobs:
         id: scan
         uses: aquasecurity/trivy-action@master
         with: 
-          image-ref: 'syagolnikov/trivy:${{ github.sha }}'
+          image-ref: 'syagolnikov/nginx:${{ github.sha }}'
           format: 'template'
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results.sarif'
@@ -47,5 +47,5 @@ jobs:
       - name: push  
         if: steps.scan.outcome == 'success'
         run: |
-          docker push syagolnikov/nginx:${TRIVY_IMAGE_TAG}
+          docker push syagolnikov/nginx:${{ github.sha }}
       
