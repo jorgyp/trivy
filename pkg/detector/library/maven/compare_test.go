@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	dbTypes "github.com/aquasecurity/trivy-db/pkg/types"
-	"github.com/aquasecurity/trivy/pkg/log"
 )
 
 func TestComparer_IsVulnerable(t *testing.T) {
@@ -66,6 +65,39 @@ func TestComparer_IsVulnerable(t *testing.T) {
 			want: true,
 		},
 		{
+			name: "version requirements",
+			args: args{
+				currentVersion: "1.2.3",
+				advisory: dbTypes.Advisory{
+					VulnerableVersions: []string{"(,1.2.3]"},
+					PatchedVersions:    []string{"1.2.4"},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "version soft requirements happy",
+			args: args{
+				currentVersion: "1.2.3",
+				advisory: dbTypes.Advisory{
+					VulnerableVersions: []string{"1.2.3"},
+					PatchedVersions:    []string{"1.2.4"},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "version soft requirements",
+			args: args{
+				currentVersion: "1.2.3",
+				advisory: dbTypes.Advisory{
+					VulnerableVersions: []string{"1.2.2"},
+					PatchedVersions:    []string{"1.2.4"},
+				},
+			},
+			want: false,
+		},
+		{
 			name: "invalid constraint",
 			args: args{
 				currentVersion: "1.2.3",
@@ -76,7 +108,6 @@ func TestComparer_IsVulnerable(t *testing.T) {
 			want: false,
 		},
 	}
-	log.InitLogger(false, false)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := maven.Comparer{}
