@@ -36,7 +36,7 @@ jobs:
         uses: auqasecurity/trivy-action@master
         with: 
           image-ref: 'syagolnikov/trivy:${{ github.sha }}'
-          formate: 'template'
+          format: 'template'
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results.sarif'
 
