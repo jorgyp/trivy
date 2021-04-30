@@ -40,6 +40,10 @@ jobs:
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results.sarif'
 
+      - name: Upload Trivy scan
+        uses: github/codeql-action/upload-sarif@v1
+        with: 
+          sarif_file: 'trivy-results.sarif'
       - name: push  
         if: steps.scan.outcome == 'success'
         run: |
