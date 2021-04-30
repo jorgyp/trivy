@@ -38,8 +38,8 @@ jobs:
           git merge main
           sh -c 'yes | gcloud auth configure-docker'
           docker build -t syagolnikov/trivy:${TRIVY_IMAGE_TAG} -f Dockerfile-builtin-db .
-          docker save "syagolnikov/trivy:${TRIVY_IMAGE_TAG}" -o /tmp/img.tar
-          scan=$(docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/tmp/ aquasec/trivy --input /tmp/img.tar)
+          docker save "syagolnikov/trivy:${TRIVY_IMAGE_TAG}" -o img.tar
+          scan=$(docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/tmp/ aquasec/trivy --input img.tar)
           if [[ "$scan" != *" CRITICAL: 0"* ]]; then
             echo 'found high vulnerabilities'
           else
