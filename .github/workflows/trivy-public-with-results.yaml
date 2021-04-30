@@ -1,4 +1,4 @@
-name: public trivy 
+name: scan with results 
 on:
   workflow_dispatch:
     inputs:
