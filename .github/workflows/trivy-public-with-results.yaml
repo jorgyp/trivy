@@ -33,7 +33,7 @@ jobs:
         shell: bash
       - name: Trivy scanner
         id: scan
-        uses: auqasecurity/trivy-actions@master
+        uses: auqasecurity/trivy-action@master
         with: 
           image-ref: 'syagolnikov/trivy:${{ github.sha }}'
           formate: 'template'
