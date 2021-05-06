@@ -6,8 +6,6 @@ on:
         description: "start run"
         default: "run"
         required: no
-  schedule:
-    - cron: '* * 1-30 * *'
 
 jobs:
   trivy-build:
