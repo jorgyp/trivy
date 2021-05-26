@@ -12,6 +12,6 @@ metadata:
   annotations:
     github.com/project-slug: jorgyp/trivy
 spec:
-  type: library
-  owner: CNCF
+  type: service
+  owner: jorgyp
   lifecycle: experimental
