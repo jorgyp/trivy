@@ -1,9 +1,9 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: backstage
+  name: trivy
   description: |
-    Backstage is an open-source developer portal that puts the developer experience first.
+    Trivy scans docker images and displays all CVEs found in Aqua-security vulnerability-db
   links:
     - title: Website
       url: https://github.com/jorgyp/trivy
