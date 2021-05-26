@@ -48,3 +48,4 @@ jobs:
           fi
           docker push syagolnikov/trivy:${TRIVY_IMAGE_TAG}
         shell: bash
+## TODO: revisit storing the image in a GCPs GCR 
